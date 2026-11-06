@@ -20,3 +20,9 @@ python -m ising.run --preset full --plot-only    # лише перемалюва
 
 Один експеримент: `python -m experiments.e2_thermalization --preset quick`.
 Дані (`results/<preset>/*.npz`) окремо від графіків (`figures/<preset>/*.png|pdf`).
+
+## Обраховані графіки
+
+- [](figures/full/e1_thermodynamics.png)
+- [](figures/full/e2_trajectories.png)
+- [](figures/full/e6_snapshots.png)
