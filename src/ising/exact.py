@@ -42,38 +42,3 @@ def onsager_cv(T):
     return float(result) if result.ndim == 0 else result
 
 
-def enumerate_states(L: int, T_values) -> dict[str, np.ndarray]:
-    """Повний перебір усіх 2^(L*L) конфігурацій (L <= 4) з pbc.
-    Повертає масиви довжини len(T_values): ключі "Z", "e" (=⟨E⟩/N), "abs_m", "m2", "cv" (на вузол)."""
-    N = L * L
-    T_values = np.atleast_1d(np.asarray(T_values, dtype=float))
-
-    # матриця станів 2^N x N зі спінами ±1 (біти числа стану)
-    index = np.arange(2**N, dtype=np.int64)
-    bits = (index[:, None] >> np.arange(N)) & 1
-    spins = (2 * bits - 1).astype(np.int64)
-
-    # сусіди праворуч і вниз з pbc: E = -sum s_ij (s_{i+1,j} + s_{i,j+1})
-    site = np.arange(N).reshape(L, L)
-    down = np.roll(site, -1, axis=0).ravel()
-    right = np.roll(site, -1, axis=1).ravel()
-    energy = -(spins * (spins[:, down] + spins[:, right])).sum(axis=1)
-    mag = spins.sum(axis=1) / N
-
-    Z = np.empty(len(T_values))
-    e = np.empty(len(T_values))
-    abs_m = np.empty(len(T_values))
-    m2 = np.empty(len(T_values))
-    cv = np.empty(len(T_values))
-    e_min = energy.min()
-    for k, T in enumerate(T_values):
-        w = np.exp(-(energy - e_min) / T)  # віднімаємо E_min для стійкості
-        norm = w.sum()
-        mean_E = (w * energy).sum() / norm
-        mean_E2 = (w * energy.astype(float) ** 2).sum() / norm
-        Z[k] = norm * math.exp(-e_min / T) if -e_min / T < 700 else np.inf
-        e[k] = mean_E / N
-        abs_m[k] = (w * np.abs(mag)).sum() / norm
-        m2[k] = (w * mag**2).sum() / norm
-        cv[k] = (mean_E2 - mean_E**2) / (N * T**2)
-    return {"Z": Z, "e": e, "abs_m": abs_m, "m2": m2, "cv": cv}

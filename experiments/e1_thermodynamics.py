@@ -29,7 +29,6 @@ def measure_point(spins, L, T, seed, n_therm, n_meas):
     obs = all_observables(E, M, L, T)
     m = np.abs(M) / (L * L)
     tau_e, _ = tau_int(E)
-    tau_m, _ = tau_int(m)
     block_len = max(1, math.ceil(2 * tau_e))
     rng = np.random.default_rng(seed)
     _, cv_err = block_bootstrap((E,), lambda x: specific_heat(x, L, T), block_len, N_BOOT, rng)
@@ -37,13 +36,13 @@ def measure_point(spins, L, T, seed, n_therm, n_meas):
         "e": obs["e"], "e_err": blocking_error(E / (L * L)),
         "abs_m": obs["abs_m"], "abs_m_err": blocking_error(m),
         "cv": obs["cv"], "cv_err": cv_err,
-        "tau_e": tau_e, "tau_m": tau_m,
+        "tau_e": tau_e,
     }
 
 
 def scan(L, temps, seeds, p, protocol):
     """Скан по сітці T для одного L (від високих T до низьких). Повертає словник масивів довжини len(temps)."""
-    keys = ["e", "e_err", "abs_m", "abs_m_err", "cv", "cv_err", "tau_e", "tau_m"]
+    keys = ["e", "e_err", "abs_m", "abs_m_err", "cv", "cv_err", "tau_e"]
     out = {k: np.zeros(len(temps)) for k in keys}
     order = np.argsort(temps)[::-1]  # від найвищої T до найнижчої
     spins = None
@@ -70,7 +69,7 @@ def run(preset: str):
     main_seeds = seeds.reshape(nL, nT)
 
     data = {k: np.zeros((nL, nT)) for k in
-            ["e", "e_err", "abs_m", "abs_m_err", "cv", "cv_err", "tau_e", "tau_m"]}
+            ["e", "e_err", "abs_m", "abs_m_err", "cv", "cv_err", "tau_e"]}
     for a, L in enumerate(Ls):
         print(f"L = {L} ({protocol})", flush=True)
         res = scan(L, temps, main_seeds[a], p, protocol)

@@ -18,11 +18,6 @@ def seed_numba(seed: int) -> None:
     np.random.seed(seed)
 
 
-def boltzmann_table(T: float) -> np.ndarray:
-    """float64[2] = [exp(-4/T), exp(-8/T)] — імовірності прийняття для ΔE = 4 та 8."""
-    return np.array([np.exp(-4.0 / T), np.exp(-8.0 / T)], dtype=np.float64)
-
-
 @njit(cache=True)
 def energy(spins: np.ndarray) -> int:
     """Повна енергія E (int), кожну пару сусідів порахувано один раз."""
@@ -80,12 +75,6 @@ def _sweep_with_changes(spins: np.ndarray, table: np.ndarray) -> tuple[int, int]
             spins[i, j] = -spins[i, j]
             dE_total += dE
     return dE_total, dM_total
-
-
-@njit(cache=True)
-def sweep(spins: np.ndarray, table: np.ndarray) -> None:
-    """Один прохід: N спроб на випадкових вузлах, на місці. table = boltzmann_table(T)."""
-    _sweep_with_changes(spins, table)
 
 
 @njit(cache=True)
